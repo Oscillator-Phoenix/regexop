@@ -1,5 +1,7 @@
 package regexop
 
+// all todo
+
 type dfa struct {
 	alphbet *symbolSet
 	states  *stateSet
@@ -8,7 +10,8 @@ type dfa struct {
 	trans   *transDFA
 }
 
-func intersection(d1, d2 *dfa) dfa {
+//intersection retruns a DFA which accpets intersection of d1 and d2
+func intersection(d1, d2 *dfa) *dfa {
 
 	ctx := newCartesianContext()
 
@@ -31,5 +34,20 @@ func intersection(d1, d2 *dfa) dfa {
 		}
 	}
 
-	return dfa{alphbet, states, initial, finals, trans}
+	return &dfa{alphbet, states, initial, finals, trans}
+}
+
+// difference retruns a DFA which accpets (d1 - d2)
+func difference(d1, d2 *dfa) *dfa {
+	return nil
+}
+
+// complement returns the complement dfa on closure of symbol set
+func (d *dfa) complement() *dfa {
+	return nil
+}
+
+// isEmpty returns weather the language the dfa accpeted is empty
+func (d *dfa) isEmpty() bool {
+	return false
 }
