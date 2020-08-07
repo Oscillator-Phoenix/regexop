@@ -22,22 +22,20 @@ func TestStateSet(t *testing.T) {
 
 func TestUnionStateSet(t *testing.T) {
 	ss1 := newStateSet()
-	ss1.insert(1)
-	ss1.insert(2)
+	ss1.insert(1, 2)
 
 	ss2 := newStateSet()
-	ss2.insert(2)
-	ss2.insert(3)
+	ss2.insert(2, 3)
 
 	u1 := unionStateSet(ss1, ss2)
-	fmt.Println(u1)
+	fmt.Println(u1) // [1 2 3]
 
 	ss3 := newStateSet()
 	ss3.insert(3)
 	ss3.insert(4)
 
 	u2 := unionStateSet(ss1, ss2, ss3)
-	fmt.Println(u2)
+	fmt.Println(u2) // [1 2 3 4]
 }
 
 func TestIntersectionStateSet(t *testing.T) {
@@ -52,7 +50,7 @@ func TestIntersectionStateSet(t *testing.T) {
 	ss2.insert(4)
 
 	i1 := intersectionStateSet(ss1, ss2)
-	fmt.Println(i1)
+	fmt.Println(i1) // [ 2 3 ]
 
 	ss3 := newStateSet()
 	ss3.insert(3)
@@ -60,5 +58,5 @@ func TestIntersectionStateSet(t *testing.T) {
 	ss3.insert(5)
 
 	i2 := intersectionStateSet(ss1, ss2, ss3)
-	fmt.Println(i2)
+	fmt.Println(i2) // [ 3 ]
 }

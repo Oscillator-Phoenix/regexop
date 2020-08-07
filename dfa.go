@@ -10,6 +10,11 @@ type dfa struct {
 	trans   *transDFA
 }
 
+func (d *dfa) toRegex() string {
+	// todo
+	return ""
+}
+
 //intersection retruns a DFA which accpets intersection of d1 and d2
 func intersection(d1, d2 *dfa) *dfa {
 

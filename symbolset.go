@@ -24,8 +24,10 @@ func newSymbolSetWithEpsilon() *symbolSet {
 	return ss
 }
 
-func (ss *symbolSet) insert(s symbol) {
-	ss.m[s] = struct{}{}
+func (ss *symbolSet) insert(s ...symbol) {
+	for _, _symbol := range s {
+		ss.m[_symbol] = struct{}{}
+	}
 }
 
 func (ss *symbolSet) erase(s symbol) {

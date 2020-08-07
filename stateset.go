@@ -2,6 +2,7 @@ package regexop
 
 import (
 	"fmt"
+	"sort"
 )
 
 type state int
@@ -16,8 +17,10 @@ func newStateSet() *stateSet {
 	return &ss
 }
 
-func (ss *stateSet) insert(s state) {
-	ss.m[s] = struct{}{}
+func (ss *stateSet) insert(s ...state) {
+	for _, _state := range s {
+		ss.m[_state] = struct{}{}
+	}
 }
 
 func (ss *stateSet) erase(s state) {
@@ -32,8 +35,18 @@ func (ss *stateSet) stateSlice() []state {
 	return ret
 }
 
+func (ss *stateSet) intSlice() []int {
+	ret := make([]int, 0, len(ss.m))
+	for s := range ss.m {
+		ret = append(ret, int(s))
+	}
+	return ret
+}
+
 func (ss stateSet) String() string {
-	return fmt.Sprint(ss.stateSlice())
+	tmp := ss.intSlice()
+	sort.Ints(tmp)
+	return fmt.Sprint(tmp)
 }
 
 func (ss *stateSet) find(s state) bool {
