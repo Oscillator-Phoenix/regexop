@@ -1,5 +1,11 @@
 package regexop
 
+import (
+	"fmt"
+	"strings"
+	"unsafe"
+)
+
 type nfaStack struct {
 	s []*nfa
 }
@@ -10,9 +16,16 @@ type runeStack struct {
 
 func newNFAStack() *nfaStack {
 	var s nfaStack
-	s.s = make([]*nfa, 0)
+	s.s = []*nfa{}
 	return &s
 }
+
+// How to draw an owl in code ? see below:
+//
+//   A_A
+//  (s.s)
+// q(_^_)p
+//
 
 func (s *nfaStack) empty() bool {
 	return len(s.s) == 0
@@ -40,9 +53,20 @@ func (s *nfaStack) pop() {
 	s.s = s.s[:(len(s.s) - 1)]
 }
 
+func (s nfaStack) String() string {
+	var b strings.Builder
+	b.WriteString("[ ")
+	for _, x := range s.s {
+		b.WriteString(fmt.Sprint(unsafe.Pointer(x)))
+		b.WriteString(" ")
+	}
+	b.WriteString("]")
+	return b.String()
+}
+
 func newRuneStack() *runeStack {
 	var s runeStack
-	s.s = make([]rune, 0)
+	s.s = []rune{}
 	return &s
 }
 
@@ -70,4 +94,15 @@ func (s *runeStack) pop() {
 		panic("empty stack")
 	}
 	s.s = s.s[:(len(s.s) - 1)]
+}
+
+func (s runeStack) String() string {
+	var b strings.Builder
+	b.WriteString("[ ")
+	for _, x := range s.s {
+		b.WriteString(string(x))
+		b.WriteString(" ")
+	}
+	b.WriteString("]")
+	return b.String()
 }

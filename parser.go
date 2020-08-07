@@ -41,7 +41,7 @@ func lookBackNewNFASymbolSet() *symbolSet {
 }
 
 func isLookBackNewNFASymbols(r rune) bool {
-	return lookBackNewNFASymbolSet().find(symbol(r))
+	return !isRegularSymbol(r) || lookBackNewNFASymbolSet().find(symbol(r))
 }
 
 type parser struct {
@@ -53,6 +53,8 @@ func (p *parser) regexToDFA(regex string) *dfa {
 	return nil
 }
 
+// regexToNFA transforms a regular expression to an equivalent NFA
+// the priority of regular operation: Star == Plus == Query > Con > Union
 func (p *parser) regexToNFA(regex string) *nfa {
 	nfaStack := newNFAStack()
 	opStack := newRuneStack()
@@ -69,6 +71,7 @@ func (p *parser) regexToNFA(regex string) *nfa {
 		nfa2 := nfaStack.top()
 		nfaStack.pop()
 		nfaStack.push(p.conNFA(nfa2, nfa1))
+		fmt.Println("con")
 	}
 
 	unionNFAOnStack := func() {
@@ -77,22 +80,26 @@ func (p *parser) regexToNFA(regex string) *nfa {
 		nfa2 := nfaStack.top()
 		nfaStack.pop()
 		nfaStack.push(p.unionNFA(nfa2, nfa1))
+		fmt.Println("union")
 	}
 
 	for i := 0; i < len(re); i++ {
+		fmt.Println("No ", i, " re[i]= ", string(re[i]), " opStack: ", opStack, " nfaStckSize: ", nfaStack.size())
+
 		if !isRegularSymbol(re[i]) {
 
-			if i != 0 && isLookBackNewNFASymbols(re[i-1]) {
+			if i > 0 && isLookBackNewNFASymbols(re[i-1]) {
 				if !opStack.empty() && opStack.top() == '#' {
 					opStack.pop() // pop '#'
 					conNFAOnStack()
 				}
-				opStack.push('#')
+				opStack.push('#') // push '#'
 			}
 
 			nfaStack.push(p.symbolNFA(symbol(re[i])))
+			fmt.Println("symbol", string(re[i]))
 
-		} else if re[i] == '|' {
+		} else if re[i] == '|' { // union operation has the lowest priority
 
 			for !opStack.empty() && opStack.top() != '(' {
 				if opStack.top() == '|' {
@@ -111,22 +118,25 @@ func (p *parser) regexToNFA(regex string) *nfa {
 			nfa1 := nfaStack.top()
 			nfaStack.pop()
 			nfaStack.push(p.starNFA(nfa1))
+			fmt.Println("star")
 
 		} else if re[i] == '+' {
 
 			nfa1 := nfaStack.top()
 			nfaStack.pop()
 			nfaStack.push(p.plusNFA(nfa1))
+			fmt.Println("plus")
 
 		} else if re[i] == '?' {
 
 			nfa1 := nfaStack.top()
 			nfaStack.pop()
 			nfaStack.push(p.queryNFA(nfa1))
+			fmt.Println("query")
 
 		} else if re[i] == '(' {
 
-			if i != 0 && isLookBackNewNFASymbols(re[i-1]) {
+			if i > 0 && isLookBackNewNFASymbols(re[i-1]) {
 				if !opStack.empty() && opStack.top() == '#' {
 					opStack.pop() // pop '#'
 					conNFAOnStack()
@@ -153,6 +163,7 @@ func (p *parser) regexToNFA(regex string) *nfa {
 		} else {
 			panic("parse error") // todo: prettify
 		}
+
 	}
 
 	for !opStack.empty() {
@@ -168,10 +179,11 @@ func (p *parser) regexToNFA(regex string) *nfa {
 	}
 
 	if nfaStack.size() != 1 {
+		fmt.Println("nfaStack size: ", nfaStack.size())
 		panic("parse error") // todo: prettify
 	}
 
-	return nfaStack.top() // top
+	return nfaStack.top()
 }
 
 func (p *parser) epsilonNFA() *nfa {
@@ -249,7 +261,7 @@ func (p *parser) conNFA(n1, n2 *nfa) *nfa {
 
 	initial = n1.initial
 
-	finals = n2.finals
+	finals = n2.finals.copy()
 
 	trans = unionTwoTransNFA(n1.trans, n2.trans)
 	tmpFinalsSlice := n1.finals.stateSlice()
@@ -267,6 +279,26 @@ func (p *parser) starNFA(n *nfa) *nfa {
 	var finals *stateSet
 	var trans *transNFA
 
+	s0 := newState()
+	s1 := newState()
+
+	states = n.states.copy()
+	states.insert(s0, s1)
+
+	alphbet = n.alphbet.copy()
+
+	initial = s0
+
+	finals = newStateSet()
+	finals.insert(s1)
+
+	trans = n.trans.copy()
+	trans.unionInsertSplit(s0, constEpsilon, n.initial, s1)
+	tmpFinalsSlice := n.finals.stateSlice()
+	for _, f := range tmpFinalsSlice {
+		trans.unionInsertSplit(f, constEpsilon, n.initial, s1)
+	}
+
 	return &nfa{alphbet, states, initial, finals, trans}
 }
 
@@ -277,6 +309,26 @@ func (p *parser) plusNFA(n *nfa) *nfa {
 	var finals *stateSet
 	var trans *transNFA
 
+	s0 := newState()
+	s1 := newState()
+
+	states = n.states.copy()
+	states.insert(s0, s1)
+
+	alphbet = n.alphbet.copy()
+
+	initial = s0
+
+	finals = newStateSet()
+	finals.insert(s1)
+
+	trans = n.trans.copy()
+	trans.unionInsertSplit(s0, constEpsilon, n.initial) // just initial state of nfa
+	tmpFinalsSlice := n.finals.stateSlice()
+	for _, f := range tmpFinalsSlice {
+		trans.unionInsertSplit(f, constEpsilon, n.initial, s1)
+	}
+
 	return &nfa{alphbet, states, initial, finals, trans}
 }
 
@@ -286,6 +338,26 @@ func (p *parser) queryNFA(n *nfa) *nfa {
 	var initial state
 	var finals *stateSet
 	var trans *transNFA
+
+	s0 := newState()
+	s1 := newState()
+
+	states = n.states.copy()
+	states.insert(s0, s1)
+
+	alphbet = n.alphbet.copy()
+
+	initial = s0
+
+	finals = newStateSet()
+	finals.insert(s1)
+
+	trans = n.trans.copy()
+	trans.unionInsertSplit(s0, constEpsilon, n.initial, s1)
+	tmpFinalsSlice := n.finals.stateSlice()
+	for _, f := range tmpFinalsSlice {
+		trans.unionInsertSplit(f, constEpsilon, s1) // just s1
+	}
 
 	return &nfa{alphbet, states, initial, finals, trans}
 }
