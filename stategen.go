@@ -1,7 +1,14 @@
 package regexop
 
+// constDeadState is a state with zero outdegree in any DFA,
+// and in any DFA, all omitted trans point to constDeadState
+const (
+	constDeadState state = -2
+)
+
 var stateCount int = -1 // stateCount is a global state Increaser
 
+// newState returns a new state >= 0
 func newState() state {
 	stateCount++
 	return state(stateCount)

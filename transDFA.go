@@ -23,6 +23,13 @@ func (td *transDFA) insertSplit(from state, a symbol, to state) {
 	td.insert(transPair{from, a}, to)
 }
 
+func (td *transDFA) getSplit(from state, a symbol) state {
+	if s, isPresent := td.m[transPair{from, a}]; isPresent {
+		return s
+	}
+	return constDeadState
+}
+
 func (td transDFA) String() string {
 	var b strings.Builder
 	for p, to := range td.m {

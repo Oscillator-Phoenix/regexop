@@ -5,8 +5,6 @@ import (
 	"strings"
 )
 
-// all todo
-
 type nfa struct {
 	alphbet *symbolSet
 	states  *stateSet
@@ -55,6 +53,11 @@ func (n *nfa) toDFA() *dfa {
 		_T := stateSet2State(T)
 		unMaskQueue = unMaskQueue[1:] // pop front
 
+		// construct finals
+		if !intersectionStateSet(n.finals, T).empty() {
+			finals.insert(_T)
+		}
+
 		for a := range n.alphbet.m {
 
 			U := n.epsilonClosure(n.move(T, a))
@@ -66,21 +69,17 @@ func (n *nfa) toDFA() *dfa {
 			if !states.find(_U) {
 				states.insert(_U)
 				unMaskQueue = append(unMaskQueue, U) // push
-
-				if !intersectionStateSet(n.finals, U).empty() {
-					finals.insert(_U)
-				}
 			}
 
 			trans.insertSplit(_T, a, _U)
 		}
 	}
 
-	// printing for test
-	fmt.Println("stateSet to state context")
-	for str, _state := range stateSet2StateContext {
-		fmt.Println("epsilon closure ", str, " -> ", _state)
-	}
+	// printing for debug
+	// fmt.Println("stateSet to state context")
+	// for str, _state := range stateSet2StateContext {
+	// 	fmt.Println("epsilon closure ", str, " -> ", _state)
+	// }
 
 	return &dfa{alphbet, states, initial, finals, trans}
 }
@@ -128,7 +127,19 @@ func (n *nfa) move(T *stateSet, a symbol) *stateSet {
 	return next
 }
 
-func (n nfa) accept(ss []symbol) bool {
+func (n *nfa) accept(input string) bool {
+	rs := []rune(input)
+	start := newStateSet()
+	start.insert(n.initial)
+	ss := n.epsilonClosure(start)
+
+	for _, a := range rs {
+		ss = n.epsilonClosure(n.move(ss, symbol(a)))
+	}
+
+	if !intersectionStateSet(ss, n.finals).empty() {
+		return true
+	}
 	return false
 }
 

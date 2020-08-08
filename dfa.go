@@ -5,8 +5,6 @@ import (
 	"strings"
 )
 
-// all todo
-
 type dfa struct {
 	alphbet *symbolSet
 	states  *stateSet
@@ -60,6 +58,26 @@ func (d *dfa) complement() *dfa {
 // isEmpty returns weather the language the dfa accpeted is empty
 func (d *dfa) isEmpty() bool {
 	return false
+}
+
+func (d *dfa) accept(input string) bool {
+	rs := []rune(input)
+	s := d.initial
+
+	for _, a := range rs {
+		s = d.trans.getSplit(s, symbol(a))
+	}
+
+	if d.finals.find(s) {
+		return true
+	}
+	return false
+}
+
+// minimize returns an equivalent DFA with minimized number of state
+func (d *dfa) minimize() *dfa {
+	// todo
+	return nil
 }
 
 func (d dfa) String() string {

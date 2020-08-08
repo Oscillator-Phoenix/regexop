@@ -68,7 +68,7 @@ func (p *parser) regexToNFA(regex string) *nfa {
 		nfa2 := nfaStack.top()
 		nfaStack.pop()
 		nfaStack.push(p.conNFA(nfa2, nfa1))
-		fmt.Println("con")
+		// fmt.Println("con")
 	}
 
 	unionNFAOnStack := func() {
@@ -77,11 +77,11 @@ func (p *parser) regexToNFA(regex string) *nfa {
 		nfa2 := nfaStack.top()
 		nfaStack.pop()
 		nfaStack.push(p.unionNFA(nfa2, nfa1))
-		fmt.Println("union")
+		// fmt.Println("union")
 	}
 
 	for i := 0; i < len(re); i++ {
-		fmt.Println("No ", i, " re[i]= ", string(re[i]), " opStack: ", opStack, " nfaStckSize: ", nfaStack.size())
+		// fmt.Println("No ", i, " re[i]= ", string(re[i]), " opStack: ", opStack, " nfaStckSize: ", nfaStack.size())
 
 		if !isRegularSymbol(re[i]) {
 
@@ -94,7 +94,7 @@ func (p *parser) regexToNFA(regex string) *nfa {
 			}
 
 			nfaStack.push(p.symbolNFA(symbol(re[i])))
-			fmt.Println("symbol", string(re[i]))
+			// fmt.Println("symbol", string(re[i]))
 
 		} else if re[i] == '|' { // union operation has the lowest priority
 
@@ -115,21 +115,21 @@ func (p *parser) regexToNFA(regex string) *nfa {
 			nfa1 := nfaStack.top()
 			nfaStack.pop()
 			nfaStack.push(p.starNFA(nfa1))
-			fmt.Println("star")
+			// fmt.Println("star")
 
 		} else if re[i] == '+' {
 
 			nfa1 := nfaStack.top()
 			nfaStack.pop()
 			nfaStack.push(p.plusNFA(nfa1))
-			fmt.Println("plus")
+			// fmt.Println("plus")
 
 		} else if re[i] == '?' {
 
 			nfa1 := nfaStack.top()
 			nfaStack.pop()
 			nfaStack.push(p.queryNFA(nfa1))
-			fmt.Println("query")
+			// fmt.Println("query")
 
 		} else if re[i] == '(' {
 
