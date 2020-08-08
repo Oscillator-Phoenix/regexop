@@ -1,5 +1,10 @@
 package regexop
 
+import (
+	"fmt"
+	"strings"
+)
+
 type transDFA struct {
 	m map[transPair]state
 }
@@ -10,6 +15,19 @@ func newTransDFA() *transDFA {
 	return &td
 }
 
-func (td *transDFA) insert(p transPair, s state) {
-	td.m[p] = s
+func (td *transDFA) insert(p transPair, to state) {
+	td.m[p] = to
+}
+
+func (td *transDFA) insertSplit(from state, a symbol, to state) {
+	td.insert(transPair{from, a}, to)
+}
+
+func (td transDFA) String() string {
+	var b strings.Builder
+	for p, to := range td.m {
+		b.WriteString(fmt.Sprintf("(%d, %s) -> %d", p.s, string(p.c), to))
+		b.WriteString("\n")
+	}
+	return b.String()
 }

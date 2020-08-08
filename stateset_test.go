@@ -60,3 +60,13 @@ func TestIntersectionStateSet(t *testing.T) {
 	i2 := intersectionStateSet(ss1, ss2, ss3)
 	fmt.Println(i2) // [ 3 ]
 }
+
+func TestStateSlice(t *testing.T) {
+	ss1 := newStateSet()
+	ss1.insert(666)
+	ss1.insert(31)
+	ss1.insert(22)
+	ss1.insert(13)
+	ss1.insert(233)
+	fmt.Println(ss1.stateSlice())
+}

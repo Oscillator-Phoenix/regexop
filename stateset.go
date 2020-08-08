@@ -17,6 +17,14 @@ func newStateSet() *stateSet {
 	return &ss
 }
 
+func (ss *stateSet) size() int {
+	return len(ss.m)
+}
+
+func (ss *stateSet) empty() bool {
+	return ss.size() == 0
+}
+
 func (ss *stateSet) insert(s ...state) {
 	for _, _state := range s {
 		ss.m[_state] = struct{}{}
@@ -27,26 +35,28 @@ func (ss *stateSet) erase(s state) {
 	delete(ss.m, s)
 }
 
+// stateSlice returns sorted state slice
 func (ss *stateSet) stateSlice() []state {
-	ret := make([]state, 0, len(ss.m))
-	for s := range ss.m {
-		ret = append(ret, s)
+	is := ss.intSlice()
+	ret := make([]state, len(is))
+	for i := 0; i < len(is); i++ {
+		ret[i] = state(is[i])
 	}
 	return ret
 }
 
+// intSlice returns sorted int slice
 func (ss *stateSet) intSlice() []int {
 	ret := make([]int, 0, len(ss.m))
 	for s := range ss.m {
 		ret = append(ret, int(s))
 	}
+	sort.Ints(ret) // sort
 	return ret
 }
 
 func (ss stateSet) String() string {
-	tmp := ss.intSlice()
-	sort.Ints(tmp)
-	return fmt.Sprint(tmp)
+	return fmt.Sprint(ss.intSlice())
 }
 
 func (ss *stateSet) find(s state) bool {

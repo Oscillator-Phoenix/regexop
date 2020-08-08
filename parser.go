@@ -16,8 +16,7 @@ func regeularSymbolSet() *symbolSet {
 		_regeularSymbolSet.insert(symbol(rune('|')))
 		_regeularSymbolSet.insert(symbol(rune('(')))
 		_regeularSymbolSet.insert(symbol(rune(')')))
-		fmt.Println("regular symbol:", _regeularSymbolSet)
-		fmt.Println(_regeularSymbolSet)
+		// fmt.Println("regular symbol:", _regeularSymbolSet)
 	}
 	return _regeularSymbolSet
 }
@@ -34,8 +33,7 @@ func lookBackNewNFASymbolSet() *symbolSet {
 		_lookBackNewNFASymbolSet.insert('+')
 		_lookBackNewNFASymbolSet.insert('?')
 		_lookBackNewNFASymbolSet.insert(')')
-		fmt.Println("_lookBackNewNFASymbolSet:", _lookBackNewNFASymbolSet)
-		fmt.Println(_lookBackNewNFASymbolSet)
+		// fmt.Println("_lookBackNewNFASymbolSet:", _lookBackNewNFASymbolSet)
 	}
 	return _lookBackNewNFASymbolSet
 }
@@ -49,8 +47,7 @@ type parser struct {
 }
 
 func (p *parser) regexToDFA(regex string) *dfa {
-	// todo
-	return nil
+	return p.regexToNFA(regex).toDFA()
 }
 
 // regexToNFA transforms a regular expression to an equivalent NFA
@@ -61,9 +58,9 @@ func (p *parser) regexToNFA(regex string) *nfa {
 
 	re := []rune(regex)
 
-	for i := 0; i < len(re); i++ {
-		fmt.Println(string(re[i]), isRegularSymbol(re[i]), isLookBackNewNFASymbols(re[i]))
-	}
+	// for i := 0; i < len(re); i++ {
+	// 	fmt.Println(string(re[i]), isRegularSymbol(re[i]), isLookBackNewNFASymbols(re[i]))
+	// }
 
 	conNFAOnStack := func() {
 		nfa1 := nfaStack.top()
@@ -203,7 +200,7 @@ func (p *parser) symbolNFA(s symbol) *nfa {
 	states = newStateSet()
 	states.insert(s0, s1)
 
-	alphbet = newSymbolSet()
+	alphbet = newSymbolSet() // without epsilon
 	alphbet.insert(s)
 
 	initial = s0

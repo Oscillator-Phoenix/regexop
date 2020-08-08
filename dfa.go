@@ -1,5 +1,10 @@
 package regexop
 
+import (
+	"fmt"
+	"strings"
+)
+
 // all todo
 
 type dfa struct {
@@ -55,4 +60,30 @@ func (d *dfa) complement() *dfa {
 // isEmpty returns weather the language the dfa accpeted is empty
 func (d *dfa) isEmpty() bool {
 	return false
+}
+
+func (d dfa) String() string {
+	var b strings.Builder
+
+	b.WriteString("state set:\n")
+	b.WriteString(fmt.Sprint(d.states))
+	b.WriteString("\n")
+
+	b.WriteString("symbol set:\n")
+	b.WriteString(fmt.Sprint(d.alphbet))
+	b.WriteString("\n")
+
+	b.WriteString("initial state:\n")
+	b.WriteString(fmt.Sprint(d.initial))
+	b.WriteString("\n")
+
+	b.WriteString("final state set:\n")
+	b.WriteString(fmt.Sprint(d.finals))
+	b.WriteString("\n")
+
+	b.WriteString("trans of DFA:\n")
+	b.WriteString(fmt.Sprint(d.trans))
+	b.WriteString("\n")
+
+	return b.String()
 }
