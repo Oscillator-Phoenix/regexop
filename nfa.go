@@ -14,24 +14,19 @@ type nfa struct {
 }
 
 func (n *nfa) toDFA() *dfa {
-	var states *stateSet
-	var alphbet *symbolSet
-	var initial state
-	var finals *stateSet
-	var trans *transDFA
 
-	alphbet = n.alphbet.copy()
+	alphbet := n.alphbet.copy()
 	alphbet.erase(constEpsilon)
 
-	states = newStateSet()
+	states := newStateSet()
 
-	finals = newStateSet()
+	finals := newStateSet()
 
-	trans = newTransDFA()
+	trans := newTransDFA()
 
 	stateSet2StateContext := map[string]state{}
 	stateSet2State := func(ss *stateSet) state {
-		str := ss.String()
+		str := ss.String() // injective: stateSet --> string
 		if _, isPresent := stateSet2StateContext[str]; !isPresent {
 			stateSet2StateContext[str] = newState()
 		}
@@ -41,7 +36,7 @@ func (n *nfa) toDFA() *dfa {
 	s0 := newStateSet()
 	s0.insert(n.initial)
 	ecs0 := n.epsilonClosure(s0)
-	initial = stateSet2State(ecs0) // initial
+	initial := stateSet2State(ecs0) // initial
 	states.insert(initial)
 
 	unMaskQueue := [](*stateSet){}
@@ -58,7 +53,7 @@ func (n *nfa) toDFA() *dfa {
 			finals.insert(_T)
 		}
 
-		for a := range n.alphbet.m {
+		for a := range alphbet.m {
 
 			U := n.epsilonClosure(n.move(T, a))
 			if U.size() == 0 {

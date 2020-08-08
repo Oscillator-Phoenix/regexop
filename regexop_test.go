@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 )
 
 // auto random integration testing in this package
@@ -16,22 +17,26 @@ import (
 // And, the useful solution to solve it is to wrap the whole regular expression with brackets.
 
 var (
-	constNumSample         int = 100
+	_randSeed int64 = 0
+
+	constNumSample         int = 200
 	constRandomStringScale int = 20
 
 	symbols = []symbol{'a', 'b'}
 
+	// required:
+	// `a` and `b` shoud occurs at the same time in regex, such as `a+` or `b?` is invalid
 	regexes = []string{
-		`(a|b)*abb`,
-		`a*b*`,
-		`ab(a|b)*`,
-		`a?`,
-		`a+`,
-		`(bbb(a?)(b*))+`,
-		`a*`,
-		`a(a|b)*`,
-		`b(a|b)*`,
-		`ab+`,
+		`((a|b)*abb)`,
+		`(a*b*)`,
+		`(ab(a|b)*)`,
+		`(a?b)`,
+		`(a+b)`,
+		`((bbb(a?)(b*))+)`,
+		`((a*)b)`,
+		`(a(a|b)*)`,
+		`(b(a|b)*)`,
+		`(ab+)`,
 		`((a+)|(b+))`,
 		`(a|b)(a|b)(a|b)(a|b)(a|b)`,
 		`(a|b)*a(a|b)(a|b)(a|b)(a|b)(a|b)(a|b)(a|b)(a|b)(a|b)`,
@@ -39,7 +44,15 @@ var (
 	}
 )
 
+func randSeed() int64 {
+	if _randSeed == 0 {
+		_randSeed = time.Now().Unix()
+	}
+	return _randSeed
+}
+
 func randomStrings(symbols []symbol, numSample int, scale int) []string {
+	rand.Seed(randSeed())
 	ret := []string{}
 	for i := 0; i < numSample; i++ {
 		var b strings.Builder
@@ -59,6 +72,33 @@ func TestGoStdRegexp(t *testing.T) {
 	fmt.Println(re.MatchString("abab"))     // false
 	fmt.Println(re.MatchString("abb"))      // true
 	fmt.Println(re.MatchString("ababaabb")) // true
+}
+
+func TestRegex2NFA(t *testing.T) {
+
+	var p parser
+
+	for i, regex := range regexes {
+
+		n := p.regexToNFA(regex)
+
+		re := regexp.MustCompile("^" + regex + "$") // ......
+
+		tests := randomStrings(symbols, constNumSample, constRandomStringScale)
+
+		for j, str := range tests {
+			predict := n.accept(str)
+			answer := re.MatchString(str)
+			if predict != answer {
+				t.Logf("answer = %v, predict = %v\n", answer, predict)
+				t.Logf("failed at regexes[%d] = '%s' with samples[%d] '%s' \n", i, regex, j, str)
+				t.FailNow()
+			}
+		}
+
+		t.Logf("passed %d/%d\n", i+1, len(regexes))
+	}
+
 }
 
 func TestRegex2DFA(t *testing.T) {
@@ -88,20 +128,19 @@ func TestRegex2DFA(t *testing.T) {
 
 }
 
-func TestRegex2NFA(t *testing.T) {
-
+func TestRegex2DFAandDFAComplement1(t *testing.T) {
 	var p parser
 
 	for i, regex := range regexes {
 
-		n := p.regexToNFA(regex)
+		d := p.regexToDFA(regex).complement()
 
 		re := regexp.MustCompile("^" + regex + "$") // ......
 
 		tests := randomStrings(symbols, constNumSample, constRandomStringScale)
 
 		for j, str := range tests {
-			predict := n.accept(str)
+			predict := !d.accept(str)
 			answer := re.MatchString(str)
 			if predict != answer {
 				t.Logf("answer = %v, predict = %v\n", answer, predict)
@@ -112,5 +151,102 @@ func TestRegex2NFA(t *testing.T) {
 
 		t.Logf("passed %d/%d\n", i+1, len(regexes))
 	}
+}
+
+func TestRegex2DFAandDFAComplement2(t *testing.T) {
+	var p parser
+
+	for i, regex := range regexes {
+
+		d := p.regexToDFA(regex).complement().complement()
+
+		re := regexp.MustCompile("^" + regex + "$") // ......
+
+		tests := randomStrings(symbols, constNumSample, constRandomStringScale)
+
+		for j, str := range tests {
+			predict := d.accept(str)
+			answer := re.MatchString(str)
+			if predict != answer {
+				t.Logf("answer = %v, predict = %v\n", answer, predict)
+				t.Logf("failed at regexes[%d] = '%s' with samples[%d] '%s' \n", i, regex, j, str)
+				t.FailNow()
+			}
+		}
+
+		t.Logf("passed %d/%d\n", i+1, len(regexes))
+	}
+}
+
+func TestRegex2DFAandDFAIntersection(t *testing.T) {
+	var p parser
+
+	for i, regex1 := range regexes {
+
+		re1 := regexp.MustCompile("^" + regex1 + "$")
+		d1 := p.regexToDFA(regex1)
+
+		for j, regex2 := range regexes {
+
+			re2 := regexp.MustCompile("^" + regex2 + "$")
+			d2 := p.regexToDFA(regex2)
+
+			interDFA := intersectionTwoDFA(d1, d2)
+
+			tests := randomStrings(symbols, constNumSample, constRandomStringScale)
+
+			for k, str := range tests {
+				predict := interDFA.accept(str)
+				answer := re1.MatchString(str) && re2.MatchString(str) // intersection
+				if predict != answer {
+					t.Logf("answer = %v, predict = %v\n", answer, predict)
+					t.Logf("failed at regexes[%d] = '%s' , regexs[%d] = %s, with samples[%d] '%s' \n", i, regex1, j, regex2, k, str)
+					t.FailNow()
+				}
+			}
+		}
+
+		t.Logf("passed %d/%d\n", i+1, len(regexes))
+	}
+
+}
+
+func TestRegex2DFAandDFADifference(t *testing.T) {
+	var p parser
+
+	for i, regex1 := range regexes {
+
+		re1 := regexp.MustCompile("^" + regex1 + "$")
+		d1 := p.regexToDFA(regex1)
+
+		for j, regex2 := range regexes {
+
+			re2 := regexp.MustCompile("^" + regex2 + "$")
+			d2 := p.regexToDFA(regex2)
+
+			diffDFA := d1.difference(d2)
+
+			tests := randomStrings(symbols, constNumSample, constRandomStringScale)
+
+			for k, str := range tests {
+				predict := diffDFA.accept(str)
+				answer1 := re1.MatchString(str)
+				answer2 := re2.MatchString(str)
+				answer := answer1 && !answer2
+
+				if predict != answer {
+					t.Logf("answer = %v, predict = %v\n", answer, predict)
+					t.Logf("failed at regexes[%d] = '%s' , regexs[%d] = %s, with samples[%d] '%s' \n", i, regex1, j, regex2, k, str)
+					t.FailNow()
+				}
+			}
+		}
+
+		t.Logf("passed %d/%d\n", i+1, len(regexes))
+	}
+
+}
+
+func TestRegex2DFAandDFAUnino(t *testing.T) {
 
 }

@@ -30,6 +30,15 @@ func (td *transDFA) getSplit(from state, a symbol) state {
 	return constDeadState
 }
 
+func (td *transDFA) find(p transPair) bool {
+	_, find := td.m[p]
+	return find
+}
+
+func (td *transDFA) findSplit(from state, a symbol) bool {
+	return td.find(transPair{from, a})
+}
+
 func (td transDFA) String() string {
 	var b strings.Builder
 	for p, to := range td.m {
