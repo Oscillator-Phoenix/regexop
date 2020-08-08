@@ -25,7 +25,7 @@ func (d *dfa) minimize() *dfa {
 }
 
 // isSubset return weather d is the subset of d2
-func (d *dfa) isSubset(d2 *dfa) bool {
+func (d *dfa) isSubsetOf(d2 *dfa) bool {
 	// `d1 is the subset of d2` is equal to (d1 - d2) is empty set
 	return d.difference(d2).isEmpty()
 }
@@ -35,7 +35,7 @@ func intersectionTwoDFA(d1, d2 *dfa) *dfa {
 
 	ctx := newCartesianContext()
 
-	alphbet := intersectionSymbolSet(d1.alphbet, d2.alphbet)
+	alphbet := unionSymbolSet(d1.alphbet, d2.alphbet)
 	states := ctx.cartesianStateSet(d1.states, d2.states)
 	initial := ctx.cartesianState(d1.initial, d2.initial)
 	finals := ctx.cartesianStateSet(d1.finals, d2.finals)
@@ -54,7 +54,7 @@ func intersectionTwoDFA(d1, d2 *dfa) *dfa {
 		}
 	}
 
-	// printing for debug
+	// // printing for debug
 	// fmt.Println("intersection two DFA Cartesian Context")
 	// for p, s := range ctx.cartesianMap {
 	// 	fmt.Printf("(%d, %d) <-> %d\n", p.x, p.y, s)
@@ -66,6 +66,7 @@ func intersectionTwoDFA(d1, d2 *dfa) *dfa {
 // difference retruns a DFA which accpets (d - d2)
 func (d *dfa) difference(d2 *dfa) *dfa {
 	// d1 - d2 = (d1) intersection (complement d2)
+	d2.alphbet = unionSymbolSet(d.alphbet, d2.alphbet)
 	return intersectionTwoDFA(d, d2.complement())
 }
 
@@ -130,6 +131,10 @@ func (d *dfa) isEmpty() bool {
 	}
 
 	return true // is empty
+}
+
+func unionTwoDFA(d1, d2 *dfa) *dfa {
+	return intersectionTwoDFA(d1.complement(), d2.complement()).complement()
 }
 
 func (d *dfa) accept(input string) bool {

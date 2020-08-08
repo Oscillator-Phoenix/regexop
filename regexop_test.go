@@ -25,7 +25,7 @@ var (
 	symbols = []symbol{'a', 'b'}
 
 	// required:
-	// `a` and `b` shoud occurs at the same time in regex, such as `a+` or `b?` is invalid
+	// `a` and `b` shoud occur at the same time in a regex, such as `a+` and `b?` are invalid
 	regexes = []string{
 		`((a|b)*abb)`,
 		`(a*b*)`,
@@ -197,7 +197,9 @@ func TestRegex2DFAandDFAIntersection(t *testing.T) {
 
 			for k, str := range tests {
 				predict := interDFA.accept(str)
-				answer := re1.MatchString(str) && re2.MatchString(str) // intersection
+				answer1 := re1.MatchString(str)
+				answer2 := re2.MatchString(str)
+				answer := answer1 && answer2 // intersection
 				if predict != answer {
 					t.Logf("answer = %v, predict = %v\n", answer, predict)
 					t.Logf("failed at regexes[%d] = '%s' , regexs[%d] = %s, with samples[%d] '%s' \n", i, regex1, j, regex2, k, str)
@@ -244,9 +246,39 @@ func TestRegex2DFAandDFADifference(t *testing.T) {
 
 		t.Logf("passed %d/%d\n", i+1, len(regexes))
 	}
-
 }
 
-func TestRegex2DFAandDFAUnino(t *testing.T) {
+func TestRegex2DFAandDFAUnion(t *testing.T) {
+	var p parser
 
+	for i, regex1 := range regexes {
+
+		re1 := regexp.MustCompile("^" + regex1 + "$")
+		d1 := p.regexToDFA(regex1)
+
+		for j, regex2 := range regexes {
+
+			re2 := regexp.MustCompile("^" + regex2 + "$")
+			d2 := p.regexToDFA(regex2)
+
+			unDFA := unionTwoDFA(d1, d2)
+
+			tests := randomStrings(symbols, constNumSample, constRandomStringScale)
+
+			for k, str := range tests {
+				predict := unDFA.accept(str)
+				answer1 := re1.MatchString(str)
+				answer2 := re2.MatchString(str)
+				answer := answer1 || answer2 // union
+
+				if predict != answer {
+					t.Logf("answer = %v, predict = %v\n", answer, predict)
+					t.Logf("failed at regexes[%d] = '%s' , regexs[%d] = %s, with samples[%d] '%s' \n", i, regex1, j, regex2, k, str)
+					t.FailNow()
+				}
+			}
+		}
+
+		t.Logf("passed %d/%d\n", i+1, len(regexes))
+	}
 }
