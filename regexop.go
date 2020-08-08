@@ -28,8 +28,8 @@ func IntersectionRegex(regexes ...string) string {
 	return ret
 }
 
-// IsSubset return weather the first regular expression is the subset of the rest regular expressions
-func IsSubset(regexes ...string) bool {
+// IsSubsetOf return weather the first regular expression is the subset of the rest regular expressions
+func IsSubsetOf(regexes ...string) bool {
 	if len(regexes) < 2 {
 		return false
 	}

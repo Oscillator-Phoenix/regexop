@@ -35,7 +35,7 @@ func intersectionTwoDFA(d1, d2 *dfa) *dfa {
 
 	ctx := newCartesianContext()
 
-	alphbet := unionSymbolSet(d1.alphbet, d2.alphbet)
+	alphbet := intersectionSymbolSet(d1.alphbet, d2.alphbet)
 	states := ctx.cartesianStateSet(d1.states, d2.states)
 	initial := ctx.cartesianState(d1.initial, d2.initial)
 	finals := ctx.cartesianStateSet(d1.finals, d2.finals)
@@ -65,8 +65,16 @@ func intersectionTwoDFA(d1, d2 *dfa) *dfa {
 
 // difference retruns a DFA which accpets (d - d2)
 func (d *dfa) difference(d2 *dfa) *dfa {
-	// d1 - d2 = (d1) intersection (complement d2)
+	// d1 - d2 <=> (d1) intersection (complement d2)
+
+	// you should make sure:
+	// the the complement operation on d2 will not lose that omitted trans information in d2,
+	// which is important information in the intersection dfa of d1 and -d2.
+	// So, you should enlarge the alphbet of d2.
+	// In face, add irrelevant symbols about trans to alphbet will not effect the correctness of a DFA.
+	// However, all symbols in alphbet effect the constructing the complement of DFA.
 	d2.alphbet = unionSymbolSet(d.alphbet, d2.alphbet)
+
 	return intersectionTwoDFA(d, d2.complement())
 }
 
@@ -134,6 +142,10 @@ func (d *dfa) isEmpty() bool {
 }
 
 func unionTwoDFA(d1, d2 *dfa) *dfa {
+	// the reason for enlarge alphbet is the same as mentioned in the comments of function `dfa.difference()`
+	u := unionSymbolSet(d1.alphbet, d2.alphbet)
+	d1.alphbet = u
+	d2.alphbet = u
 	return intersectionTwoDFA(d1.complement(), d2.complement()).complement()
 }
 
