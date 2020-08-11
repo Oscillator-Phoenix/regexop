@@ -115,3 +115,15 @@ func TestMinimizeHopcroft5(t *testing.T) {
 	fmt.Println("minimized DFA")
 	fmt.Println(md)
 }
+
+func TestMinimizeHopcroft6(t *testing.T) {
+	var p parser
+
+	d := p.regexToDFA("a*b*")
+	fmt.Println("DFA")
+	fmt.Println(d)
+
+	md := d.minimizeHopcroft()
+	fmt.Println("minimized DFA")
+	fmt.Println(md)
+}

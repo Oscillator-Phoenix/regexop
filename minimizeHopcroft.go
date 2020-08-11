@@ -137,7 +137,7 @@ func constrcutMinimizeFrom(d *dfa, pi map[*stateSet](struct{})) *dfa {
 		}
 	}
 
-	// states.erase(constDeadState)
+	states.erase(constDeadState) // omit constDeadState
 
 	for p, to := range d.trans.m {
 		if states.find(p.s) {

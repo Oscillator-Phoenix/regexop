@@ -53,7 +53,7 @@ func (d *dfa) minimizeBrzozowski() *dfa {
 
 func (d *dfa) minimize() *dfa {
 	return d.minimizeHopcroft()
-	// return d.minimizeBrzozowski()
+	// return `Bug!!!` d.minimizeBrzozowski()
 }
 
 // isSubset return weather d is the subset of d2
