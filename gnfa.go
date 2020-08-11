@@ -12,36 +12,35 @@ type transGNFAPair struct {
 
 type transGNFA struct {
 	// (from, to) -> regex
-	m map[transGNFAPair]string
+	m map[transGNFAPair]([]rune)
 }
 
 func newTransGNFA() *transGNFA {
 	var tg transGNFA
-	tg.m = make(map[transGNFAPair]string)
+	tg.m = make(map[transGNFAPair]([]rune))
 	return &tg
 }
 
-func (tg *transGNFA) getRegex(from, to state) string {
+func (tg *transGNFA) getRegex(from, to state) []rune {
 	p := transGNFAPair{from, to}
 	if re, isPresent := tg.m[p]; isPresent {
 		return re
 	}
-	return ""
+	return nil
 }
 
-func (tg *transGNFA) setRegex(from, to state, regex string) {
+func (tg *transGNFA) setRegex(from, to state, regex []rune) {
 	p := transGNFAPair{from, to}
 	tg.m[p] = regex
-
 }
 
 func (tg transGNFA) String() string {
 	var b strings.Builder
 	for p, re := range tg.m {
-		if re == string(constEpsilon) {
+		if len(re) == 0 {
 			b.WriteString(fmt.Sprintf("(%d, <esp>) -> %d\n", p.from, p.to))
 		} else {
-			b.WriteString(fmt.Sprintf("(%d, %s) -> %d\n", p.from, re, p.to))
+			b.WriteString(fmt.Sprintf("(%d, %s) -> %d\n", p.from, string(re), p.to))
 		}
 	}
 	return b.String()
@@ -84,7 +83,8 @@ func newGFA(alphbet *symbolSet, states *stateSet, initial state, final state, tr
 func (g *gnfa) toRegex() string {
 
 	if g.dif.size() == 0 {
-		return g.trans.getRegex(g.initial, g.final)
+		re := g.trans.getRegex(g.initial, g.final)
+		return string(re)
 	}
 
 	// pop one
@@ -107,36 +107,34 @@ func (g *gnfa) toRegex() string {
 			r3 := g.trans.getRegex(rip, qj)
 			r4 := g.trans.getRegex(qi, qj)
 
-			if r1 == "" || r3 == "" {
+			if r1 == nil || r3 == nil {
 				continue
 			}
 
 			newRegex := ""
 
-			if r1 != "" {
-				newRegex += r1
+			if r1 != nil {
+				newRegex += string(r1)
 			}
 
-			if r2 != "" {
-				newRegex += ("(" + r2 + ")" + "*")
+			if r2 != nil {
+				newRegex += ("(" + string(r2) + ")" + "*")
 			}
 
-			if r3 != "" {
-				newRegex += r3
+			if r3 != nil {
+				newRegex += string(r3)
 			}
 
-			if r4 != "" {
+			if r4 != nil {
 				if newRegex != "" {
-					newRegex = "(" + newRegex + ")" + "|" + r4
+					newRegex = "(" + newRegex + ")" + "|" + string(r4)
 				} else {
-					newRegex += r4
+					newRegex += string(r4)
 				}
 			}
 
-			if newRegex != "" {
-				g.trans.setRegex(qi, qj, newRegex)
-				fmt.Printf("setRegex (%d, %d) : %s\n", qi, qj, newRegex)
-			}
+			g.trans.setRegex(qi, qj, []rune(newRegex))
+			fmt.Printf("setRegex (%d, %d) : %s\n", qi, qj, newRegex)
 		}
 	}
 
@@ -154,12 +152,17 @@ func (d *dfa) toGNAF() *gnfa {
 	states.insert(initial, final)
 
 	trans := newTransGNFA()
-	trans.setRegex(initial, d.initial, "<e>")
+
+	// []rune{} represents the edge with symbol `epsilon`
+	// nil represents no edge
+
+	trans.setRegex(initial, d.initial, []rune{})
 	for df := range d.finals.m {
-		trans.setRegex(df, final, "<e>")
+		trans.setRegex(df, final, []rune{})
 	}
+
 	for p, to := range d.trans.m {
-		trans.setRegex(p.s, to, string(p.c))
+		// 使用 | 操作合并两端相同地箭头， 使得一个状态到另一个状态只有一个箭头
 	}
 
 	return newGFA(alphbet, states, initial, final, trans)
