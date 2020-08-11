@@ -19,7 +19,7 @@ import (
 var (
 	_randSeed int64 = 0
 
-	constNumSample         int = 200
+	constNumSample         int = 2000
 	constRandomStringScale int = 20
 
 	symbols = []symbol{'a', 'b'}
@@ -41,6 +41,12 @@ var (
 		`(a|b)(a|b)(a|b)(a|b)(a|b)`,
 		`(a|b)*a(a|b)(a|b)(a|b)`,
 		`((a|b)(a|b))`,
+		`(aa(a|b))`,
+		`((a|b)*aabb)`,
+		`a(a|b)*b`,
+		`b(a|b)*a`,
+		`aaaaaa(b)*`,
+		`(((((a|b)+))))`,
 	}
 )
 
@@ -281,4 +287,58 @@ func TestRegex2DFAandDFAUnion(t *testing.T) {
 
 		t.Logf("passed %d/%d\n", i+1, len(regexes))
 	}
+}
+
+func TestRegex2DFAMinimize1(t *testing.T) {
+
+	var p parser
+
+	for i, regex := range regexes {
+
+		d := p.regexToDFA(regex)
+		md := d.minimize()
+		re := regexp.MustCompile("^" + regex + "$") // ......
+
+		tests := randomStrings(symbols, constNumSample, constRandomStringScale)
+
+		for j, str := range tests {
+			predict1 := d.accept(str)
+			predict2 := md.accept(str)
+			answer := re.MatchString(str)
+			if !(predict1 == predict2 && predict2 == answer) {
+				t.Logf("answer = %v, predict1 = %v, predict2 = %v\n", answer, predict1, predict2)
+				t.Logf("failed at regexes[%d] = '%s' with samples[%d] '%s' \n", i, regex, j, str)
+				t.FailNow()
+			}
+		}
+
+		t.Logf("passed %d/%d\n", i+1, len(regexes))
+	}
+
+}
+
+func TestRegex2DFAMinimize2(t *testing.T) {
+
+	var p parser
+
+	for i, regex := range regexes {
+		md := p.regexToDFA(regex).minimize()
+		re := regexp.MustCompile("^" + regex + "$") // ......
+
+		tests := randomStrings(symbols, constNumSample, constRandomStringScale)
+
+		for j, str := range tests {
+			answer := re.MatchString(str)
+			predict1 := answer // omit
+			predict2 := md.accept(str)
+			if !(predict1 == predict2 && predict2 == answer) {
+				t.Logf("answer = %v, predict1 = %v, predict2 = %v\n", answer, predict1, predict2)
+				t.Logf("failed at regexes[%d] = '%s' with samples[%d] '%s' \n", i, regex, j, str)
+				t.FailNow()
+			}
+		}
+
+		t.Logf("passed %d/%d\n", i+1, len(regexes))
+	}
+
 }

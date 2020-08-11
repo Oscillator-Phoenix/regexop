@@ -13,20 +13,82 @@ type dfa struct {
 	trans   *transDFA
 }
 
+// Introduction to the Theory of Computation Chapter 1.3.2
 func (d *dfa) toRegex() string {
 	// todo
 	return ""
 }
 
+func (d *dfa) reverseToNFA() *nfa {
+	alphbet := d.alphbet.copy()
+
+	initial := newState()
+
+	states := d.states.copy()
+	states.insert(initial)
+
+	finals := newStateSet()
+	finals.insert(d.initial) // make the initial state of DFA a final state of NFA
+
+	trans := newTransNFA()
+	trans.insertSplit(initial, constEpsilon, d.finals.copy())
+	for p, to := range d.trans.m {
+		trans.insertSplitSingle(to, p.c, p.s) // reversing all the transDFA
+	}
+
+	return &nfa{alphbet, states, initial, finals, trans}
+}
+
+func (d *dfa) reverseToDFA() *dfa {
+	return d.reverseToNFA().toDFA()
+}
+
 // minimize returns an equivalent DFA with minimized number of state
-func (d *dfa) minimize() *dfa {
-	// todo
+// Brzozowski's algorithm for DFA minimization
+func (d *dfa) minimizeBrzozowski() *dfa {
+	// Bug: this implment CANNOT returns a minimized DFA !!!
+	return d.reverseToDFA().reverseToDFA()
+}
+
+// minimize returns an equivalent DFA with minimized number of state
+// Hopcroft’s algorithm for DFA minimization
+func (d *dfa) minimizeHopcroft() *dfa {
+	partition := []*stateSet{}
+	partition = append(partition, d.finals)
+	partition = append(partition, d.states.difference(d.finals))
+
+	newPartition := []*stateSet{}
+
+	for _, g := range partition {
+		ss := g.stateSlice()
+		for i := 0; i < len(ss); i++ {
+			for j := i + 1; j < len(ss); j++ {
+				same := true
+				for a := range d.alphbet.m {
+					if d.trans.getSplit(ss[i], a) != d.trans.getSplit(ss[j], a) {
+						same = false
+						break
+					}
+				}
+				if same == true {
+
+				}
+			}
+		}
+		newPartition = append(newPartition, nil)
+	}
+
 	return nil
+}
+
+func (d *dfa) minimize() *dfa {
+	// return d.minimizeHopcroft()
+	return d.minimizeBrzozowski()
 }
 
 // isSubset return weather d is the subset of d2
 func (d *dfa) isSubsetOf(d2 *dfa) bool {
-	// `d1 is the subset of d2` is equal to (d1 - d2) is empty set
+	// `d1 is the subset of d2` is equal to (d1 - d2) is a empty set
 	return d.difference(d2).isEmpty()
 }
 

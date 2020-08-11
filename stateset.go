@@ -72,6 +72,14 @@ func (ss *stateSet) copy() *stateSet {
 	return c
 }
 
+func (ss *stateSet) difference(ss2 *stateSet) *stateSet {
+	diff := ss.copy()
+	for s := range ss2.m {
+		diff.erase(s)
+	}
+	return diff
+}
+
 func unionStateSet(sss ...*stateSet) *stateSet {
 	if len(sss) == 0 {
 		return nil

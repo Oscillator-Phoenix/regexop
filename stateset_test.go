@@ -70,3 +70,13 @@ func TestStateSlice(t *testing.T) {
 	ss1.insert(233)
 	fmt.Println(ss1.stateSlice())
 }
+
+func TestStateSetDifference(t *testing.T) {
+	ss1 := newStateSet()
+	ss1.insert(1, 2, 3, 4, 5)
+	ss2 := newStateSet()
+	ss2.insert(2, 4, 6, 8)
+
+	diff := ss1.difference(ss2)
+	fmt.Println(diff)
+}
