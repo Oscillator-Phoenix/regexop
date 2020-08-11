@@ -331,3 +331,44 @@ func TestDFAReverse3(t *testing.T) {
 	fmt.Println("minimized DFA")
 	fmt.Println(md)
 }
+
+func TestDFAReverse4(t *testing.T) {
+	var p parser
+
+	d := p.regexToDFA("(a|b)*(a|b)*a")
+	fmt.Println("DFA")
+	fmt.Println(d)
+
+	rn := d.reverseToNFA()
+	fmt.Println("reverse NFA")
+	fmt.Println(rn)
+
+	rd := d.reverseToDFA()
+	fmt.Println("reverse DFA")
+	fmt.Println(rd)
+
+	md := d.reverseToDFA().reverseToDFA()
+	fmt.Println("minimized DFA")
+	fmt.Println(md)
+}
+
+func TestDFAMinimize3(t *testing.T) {
+	var p parser
+
+	d := p.regexToDFA("a*b*")
+	fmt.Println("DFA")
+	fmt.Println(d)
+
+	for s := range d.states.m {
+		for a := range d.alphbet.m {
+			d.trans.insertSplit(s, a, d.trans.getSplit(s, a))
+		}
+	}
+	d.states.insert(constDeadState)
+	fmt.Println("complete DFA")
+	fmt.Println(d)
+
+	md := d.minimize()
+	fmt.Println("minimized DFA")
+	fmt.Println(md)
+}

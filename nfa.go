@@ -56,10 +56,10 @@ func (n *nfa) toDFA() *dfa {
 		for a := range alphbet.m {
 
 			U := n.epsilonClosure(n.move(T, a))
+			_U := stateSet2State(U)
 			if U.size() == 0 {
 				continue
 			}
-			_U := stateSet2State(U)
 
 			if !states.find(_U) {
 				states.insert(_U)

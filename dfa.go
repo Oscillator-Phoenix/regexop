@@ -46,44 +46,14 @@ func (d *dfa) reverseToDFA() *dfa {
 // minimize returns an equivalent DFA with minimized number of state
 // Brzozowski's algorithm for DFA minimization
 func (d *dfa) minimizeBrzozowski() *dfa {
-	// Bug: this implment CANNOT returns a minimized DFA !!!
+	// Bug: this implementation CANNOT returns a minimized DFA !!!
+	// Specifically, it CANNOT reduce the prefix redundancy states !!!
 	return d.reverseToDFA().reverseToDFA()
 }
 
-// minimize returns an equivalent DFA with minimized number of state
-// Hopcroft’s algorithm for DFA minimization
-func (d *dfa) minimizeHopcroft() *dfa {
-	partition := []*stateSet{}
-	partition = append(partition, d.finals)
-	partition = append(partition, d.states.difference(d.finals))
-
-	newPartition := []*stateSet{}
-
-	for _, g := range partition {
-		ss := g.stateSlice()
-		for i := 0; i < len(ss); i++ {
-			for j := i + 1; j < len(ss); j++ {
-				same := true
-				for a := range d.alphbet.m {
-					if d.trans.getSplit(ss[i], a) != d.trans.getSplit(ss[j], a) {
-						same = false
-						break
-					}
-				}
-				if same == true {
-
-				}
-			}
-		}
-		newPartition = append(newPartition, nil)
-	}
-
-	return nil
-}
-
 func (d *dfa) minimize() *dfa {
-	// return d.minimizeHopcroft()
-	return d.minimizeBrzozowski()
+	return d.minimizeHopcroft()
+	// return d.minimizeBrzozowski()
 }
 
 // isSubset return weather d is the subset of d2
