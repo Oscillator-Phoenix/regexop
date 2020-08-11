@@ -15,7 +15,9 @@ This package `regexop` provides some set operations on **regular expressions**, 
 ## Examples
 
 ```go
-import regexop
+import (
+    "regexop"
+)
 
 var uRegex string = regexop.UnionRegex("a", "b", "c")
 // uRegex = "a|b|c"

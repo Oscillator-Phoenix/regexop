@@ -13,7 +13,7 @@ import (
 
 // Note：
 // This testing uses Go standard package `regexp` to generate answers of test cases.
-// However, there are some differences of regular expression grammars between the  in this package and those in the package `regexp`.
+// However, there are some differences between the regular expression grammars of this package and those in package `regexp`.
 // And, the useful solution to solve it is to wrap the whole regular expression with brackets.
 
 var (

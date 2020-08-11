@@ -47,7 +47,8 @@ type parser struct {
 }
 
 func (p *parser) regexToDFA(regex string) *dfa {
-	return p.regexToNFA(regex).toDFA()
+	// return p.regexToNFA(regex).toDFA()
+	return p.regexToNFA(regex).toDFA().minimize()
 }
 
 // regexToNFA transforms a regular expression to an equivalent NFA

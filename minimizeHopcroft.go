@@ -144,7 +144,9 @@ func constrcutMinimizeFrom(d *dfa, pi map[*stateSet](struct{})) *dfa {
 			for ss := range pi {
 				if ss.find(to) {
 					representative := ss.stateSlice()[0]
-					trans.insertSplit(p.s, p.c, representative)
+					if representative != constDeadState {
+						trans.insertSplit(p.s, p.c, representative)
+					}
 				}
 			}
 		}
