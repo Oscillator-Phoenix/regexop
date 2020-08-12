@@ -35,6 +35,14 @@ func (ss *stateSet) erase(s state) {
 	delete(ss.m, s)
 }
 
+func (ss *stateSet) getOne() state {
+	for _state := range ss.m {
+		ret := _state
+		return ret
+	}
+	panic("will not reach here: getOne() from empty state set")
+}
+
 // stateSlice returns sorted state slice
 func (ss *stateSet) stateSlice() []state {
 	is := ss.intSlice()

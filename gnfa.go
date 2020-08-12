@@ -91,7 +91,7 @@ func (g *gnfa) toRegex() string {
 	}
 
 	// pop one
-	rip := g.dif.stateSlice()[0]
+	rip := g.dif.getOne()
 	g.states.erase(rip)
 	g.di.erase(rip)
 	g.df.erase(rip)
@@ -110,15 +110,19 @@ func (g *gnfa) toRegex() string {
 				continue
 			}
 
-			newRegex := ""
+			// newRegex := ""
+			var newRegex strings.Builder
 
 			if r1 != nil {
 				if len(r1) > 0 { // is not epsilon
 					if len(r1) == 1 {
-						newRegex += string(r1)
-
+						// newRegex += string(r1)
+						newRegex.WriteString(string(r1))
 					} else {
-						newRegex += "(" + string(r1) + ")"
+						// newRegex += "(" + string(r1) + ")"
+						newRegex.WriteString("(")
+						newRegex.WriteString(string(r1))
+						newRegex.WriteString(")")
 					}
 				}
 			}
@@ -126,9 +130,15 @@ func (g *gnfa) toRegex() string {
 			if r2 != nil {
 				if len(r2) > 0 { // is not epsilon
 					if len(r2) == 1 {
-						newRegex += (string(r2) + "*")
+						// newRegex += (string(r2) + "*")
+						newRegex.WriteString(string(r2))
+						newRegex.WriteString("*")
 					} else {
-						newRegex += ("(" + string(r2) + ")" + "*")
+						// newRegex += ("(" + string(r2) + ")" + "*")
+						newRegex.WriteString("(")
+						newRegex.WriteString(string(r2))
+						newRegex.WriteString(")")
+						newRegex.WriteString("*")
 					}
 				}
 			}
@@ -136,30 +146,51 @@ func (g *gnfa) toRegex() string {
 			if r3 != nil {
 				if len(r3) > 0 {
 					if len(r3) == 1 {
-						newRegex += string(r3)
+						// newRegex += string(r3)
+						newRegex.WriteString(string(r3))
 					} else {
-						newRegex += ("(" + string(r3) + ")")
+						// newRegex += ("(" + string(r3) + ")")
+						newRegex.WriteString("(")
+						newRegex.WriteString(string(r3))
+						newRegex.WriteString(")")
 					}
 				}
 			}
 
-			if newRegex != "" {
-				newRegex = "(" + newRegex + ")"
+			// if newRegex != "" {
+			// 	newRegex = "(" + newRegex + ")"
+			// }
+			if newRegex.Len() > 0 {
+				tmpStr := newRegex.String()
+				newRegex.Reset()
+				newRegex.WriteString("(")
+				newRegex.WriteString(tmpStr)
+				newRegex.WriteString(")")
+				// fmt.Println("tmpStr", tmpStr)
+				// fmt.Println("newRegex", newRegex.String())
 			}
 
 			if r4 != nil {
 				if len(r4) == 0 { // is epsilon
-					newRegex = newRegex + "?"
+					// newRegex = newRegex + "?"
+					newRegex.WriteString("?")
 				} else {
 					if len(r4) == 1 {
-						newRegex = newRegex + "|" + string(r4)
+						// newRegex = newRegex + "|" + string(r4)
+						newRegex.WriteString("|")
+						newRegex.WriteString(string(r4))
 					} else {
-						newRegex = newRegex + "|" + "(" + string(r4) + ")"
+						// newRegex = newRegex + "|" + "(" + string(r4) + ")"
+						newRegex.WriteString("|")
+						newRegex.WriteString("(")
+						newRegex.WriteString(string(r4))
+						newRegex.WriteString(")")
 					}
 				}
 			}
 
-			g.trans.setRegex(qi, qj, []rune(newRegex))
+			// g.trans.setRegex(qi, qj, []rune(newRegex))
+			g.trans.setRegex(qi, qj, []rune(newRegex.String()))
 			// fmt.Printf("setRegex (%d, %d) : %s\n", qi, qj, newRegex)
 		}
 	}
