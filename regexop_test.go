@@ -19,7 +19,7 @@ import (
 var (
 	_randSeed int64 = 0
 
-	constNumSample         int = 2000
+	constNumSample         int = 500
 	constRandomStringScale int = 20
 
 	symbols = []symbol{'a', 'b'}
@@ -47,6 +47,7 @@ var (
 		`b(a|b)*a`,
 		`aaaaaa(b)*`,
 		`(((((a|b)+))))`,
+		`(a*|b?)`,
 	}
 )
 
@@ -353,7 +354,73 @@ func TestRegexOpExamples(t *testing.T) {
 	var e bool = IsEqualTo("a+", "aa*")
 	// e = true
 
-	fmt.Println(uRegex)
-	fmt.Println(s)
-	fmt.Println(e)
+	if !IsEqualTo(uRegex, "a|b|c") {
+		t.Fail()
+	}
+	if !(s == false) {
+		t.Fail()
+	}
+	if !(e == true) {
+		t.Fail()
+	}
+}
+
+func TestDFA2Regex1(t *testing.T) {
+
+	var p parser
+
+	for i, regex := range regexes {
+		md := p.regexToDFA(regex).minimize()
+		d2rd := regexp.MustCompile("^" + "(" + md.toRegex() + ")" + "$")
+		re := regexp.MustCompile("^" + regex + "$") // ......
+
+		tests := randomStrings(symbols, constNumSample, constRandomStringScale)
+
+		for j, str := range tests {
+			answer := re.MatchString(str)
+			predict1 := md.accept(str) // omit
+			predict2 := d2rd.MatchString(str)
+			if !(predict1 == predict2 && predict2 == answer) {
+				t.Logf("answer = %v, predict1 = %v, predict2 = %v\n", answer, predict1, predict2)
+				t.Logf("failed at regexes[%d] = '%s' with samples[%d] '%s' \n", i, regex, j, str)
+				t.FailNow()
+			}
+		}
+
+		t.Logf("passed %d/%d\n", i+1, len(regexes))
+	}
+
+}
+
+func TestDFA2Regex2(t *testing.T) {
+
+	var p parser
+
+	for i, regex := range regexes {
+		md := p.regexToDFA(regex).minimize()
+		d2rd := p.regexToDFA(md.toRegex())
+
+		// if !IsEqualTo(regex, md.toRegex()) {
+		// 	t.Logf("IsEqualTo failed at regexes[%d] = '%s'\n", i, regex)
+		// 	t.FailNow()
+		// }
+
+		re := regexp.MustCompile("^" + regex + "$") // ......
+
+		tests := randomStrings(symbols, constNumSample, constRandomStringScale)
+
+		for j, str := range tests {
+			answer := re.MatchString(str)
+			predict1 := md.accept(str) // omit
+			predict2 := d2rd.accept(str)
+			if !(predict1 == predict2 && predict2 == answer) {
+				t.Logf("answer = %v, predict1 = %v, predict2 = %v\n", answer, predict1, predict2)
+				t.Logf("failed at regexes[%d] = '%s' with samples[%d] '%s' \n", i, regex, j, str)
+				t.FailNow()
+			}
+		}
+
+		fmt.Printf("passed %d/%d\n", i+1, len(regexes))
+	}
+
 }

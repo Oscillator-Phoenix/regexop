@@ -96,7 +96,7 @@ func (g *gnfa) toRegex() string {
 	g.di.erase(rip)
 	g.df.erase(rip)
 	g.dif.erase(rip)
-	fmt.Println("pop", rip)
+	// fmt.Println("pop", rip)
 
 	for qi := range g.df.m {
 		for qj := range g.di.m {
@@ -113,27 +113,37 @@ func (g *gnfa) toRegex() string {
 			newRegex := ""
 
 			if r1 != nil {
-				newRegex += string(r1)
+				if len(r1) > 0 { // is not epsilon
+					newRegex += "(" + string(r1) + ")"
+				}
 			}
 
 			if r2 != nil {
-				newRegex += ("(" + string(r2) + ")" + "*")
+				if len(r2) > 0 { // is not epsilon
+					newRegex += ("(" + string(r2) + ")" + "*")
+				}
 			}
 
 			if r3 != nil {
-				newRegex += string(r3)
+				if len(r3) > 0 {
+					newRegex += ("(" + string(r3) + ")")
+				}
+			}
+
+			if newRegex != "" {
+				newRegex = "(" + newRegex + ")"
 			}
 
 			if r4 != nil {
-				if newRegex != "" {
-					newRegex = "(" + newRegex + ")" + "|" + string(r4)
+				if len(r4) == 0 { // is epsilon
+					newRegex = newRegex + "?"
 				} else {
-					newRegex += string(r4)
+					newRegex = newRegex + "|" + "(" + string(r4) + ")"
 				}
 			}
 
 			g.trans.setRegex(qi, qj, []rune(newRegex))
-			fmt.Printf("setRegex (%d, %d) : %s\n", qi, qj, newRegex)
+			// fmt.Printf("setRegex (%d, %d) : %s\n", qi, qj, newRegex)
 		}
 	}
 

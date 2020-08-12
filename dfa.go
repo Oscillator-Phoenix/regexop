@@ -16,7 +16,7 @@ type dfa struct {
 // toRegex transforms a DFA to an equivalent regular expression
 // this implementation is from the book `Introduction to the Theory of Computation` Chapter 1.3.2
 func (d *dfa) toRegex() string {
-	return d.toGNAF().toRegex()
+	return d.minimize().toGNAF().toRegex()
 }
 
 // There are two usual method to minimize a DFA.
