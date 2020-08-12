@@ -397,7 +397,7 @@ func TestDFA2Regex2(t *testing.T) {
 	var p parser
 
 	for i, regex := range regexes {
-		md := p.regexToDFA(regex).minimize()
+		md := p.regexToDFA(regex)
 		d2rd := p.regexToDFA(md.toRegex())
 
 		// if !IsEqualTo(regex, md.toRegex()) {

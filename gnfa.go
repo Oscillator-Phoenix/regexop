@@ -114,19 +114,32 @@ func (g *gnfa) toRegex() string {
 
 			if r1 != nil {
 				if len(r1) > 0 { // is not epsilon
-					newRegex += "(" + string(r1) + ")"
+					if len(r1) == 1 {
+						newRegex += string(r1)
+
+					} else {
+						newRegex += "(" + string(r1) + ")"
+					}
 				}
 			}
 
 			if r2 != nil {
 				if len(r2) > 0 { // is not epsilon
-					newRegex += ("(" + string(r2) + ")" + "*")
+					if len(r2) == 1 {
+						newRegex += (string(r2) + "*")
+					} else {
+						newRegex += ("(" + string(r2) + ")" + "*")
+					}
 				}
 			}
 
 			if r3 != nil {
 				if len(r3) > 0 {
-					newRegex += ("(" + string(r3) + ")")
+					if len(r3) == 1 {
+						newRegex += string(r3)
+					} else {
+						newRegex += ("(" + string(r3) + ")")
+					}
 				}
 			}
 
@@ -138,7 +151,11 @@ func (g *gnfa) toRegex() string {
 				if len(r4) == 0 { // is epsilon
 					newRegex = newRegex + "?"
 				} else {
-					newRegex = newRegex + "|" + "(" + string(r4) + ")"
+					if len(r4) == 1 {
+						newRegex = newRegex + "|" + string(r4)
+					} else {
+						newRegex = newRegex + "|" + "(" + string(r4) + ")"
+					}
 				}
 			}
 
