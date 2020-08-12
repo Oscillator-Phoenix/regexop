@@ -342,3 +342,18 @@ func TestRegex2DFAMinimize2(t *testing.T) {
 	}
 
 }
+
+func TestRegexOpExamples(t *testing.T) {
+	var uRegex string = UnionRegex("a", "b", "c")
+	// uRegex = "a|b|c"
+
+	var s bool = IsSubsetOf("a*b", "a*")
+	// s = false
+
+	var e bool = IsEqualTo("a+", "aa*")
+	// e = true
+
+	fmt.Println(uRegex)
+	fmt.Println(s)
+	fmt.Println(e)
+}

@@ -16,16 +16,16 @@ This package `regexop` provides some set operations on **regular expressions**, 
 
 ```go
 import (
-    "regexop"
+    regexop "github.com/Oscillator-Phoenix/regexop"
 )
 
 var uRegex string = regexop.UnionRegex("a", "b", "c")
 // uRegex = "a|b|c"
 
-var s bool = regexop.IsSubsetOf("a+", "a*")
-// s = true
+var s bool = regexop.IsSubsetOf("a*b", "a*")
+// s = false
 
-var e bool = regexop.isEqualTo("a+", "aa*")
+var e bool = regexop.IsEqualTo("a+", "aa*")
 // e = true
 ```
 
@@ -56,5 +56,7 @@ var e bool = regexop.isEqualTo("a+", "aa*")
 ----------------
 
 ## Note
+
+This package actually implements **a simple regular expression engine**, although many methods about automata and regular expressions are not exposed to outside.
 
 Although there are many improved efficient algorithms about automata in some published papers, this package implements the basic algorithms whose efficiency are lower . 

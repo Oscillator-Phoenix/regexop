@@ -30,6 +30,9 @@ func (tg *transGNFA) getRegex(from, to state) []rune {
 }
 
 func (tg *transGNFA) setRegex(from, to state, regex []rune) {
+	if regex == nil {
+		panic("error at transGNFA.setRegex(): wrong regex")
+	}
 	p := transGNFAPair{from, to}
 	tg.m[p] = regex
 }
@@ -54,8 +57,8 @@ type gnfa struct {
 	trans   *transGNFA
 	// help data for converting to regex
 	di  *stateSet // states - {initial}
-	df  *stateSet // states - finals
-	dif *stateSet // states - ( {initial} `union` finals )
+	df  *stateSet // states - {final}
+	dif *stateSet // states - ( {initial} `union` {final} )
 }
 
 func newGFA(alphbet *symbolSet, states *stateSet, initial state, final state, trans *transGNFA) *gnfa {
@@ -97,10 +100,6 @@ func (g *gnfa) toRegex() string {
 
 	for qi := range g.df.m {
 		for qj := range g.di.m {
-
-			if qj == qi {
-				continue
-			}
 
 			r1 := g.trans.getRegex(qi, rip)
 			r2 := g.trans.getRegex(rip, rip)
@@ -157,12 +156,22 @@ func (d *dfa) toGNAF() *gnfa {
 	// nil represents no edge
 
 	trans.setRegex(initial, d.initial, []rune{})
+
 	for df := range d.finals.m {
 		trans.setRegex(df, final, []rune{})
 	}
 
 	for p, to := range d.trans.m {
 		// 使用 | 操作合并两端相同地箭头， 使得一个状态到另一个状态只有一个箭头
+		from := p.s
+		re := trans.getRegex(from, to)
+		if re == nil {
+			trans.setRegex(from, to, []rune{rune(p.c)})
+		} else {
+			re = append(re, rune('|'))
+			re = append(re, rune(p.c))
+			trans.setRegex(from, to, re)
+		}
 	}
 
 	return newGFA(alphbet, states, initial, final, trans)

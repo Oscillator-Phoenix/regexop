@@ -119,3 +119,27 @@ func TestGNFAToRegex7(t *testing.T) {
 
 	fmt.Println(g.toRegex())
 }
+
+func TestGNFAToRegex8(t *testing.T) {
+	var p parser
+
+	d := p.regexToDFA("(a|b)*abb").minimize()
+	fmt.Println(d)
+
+	g := d.toGNAF()
+	fmt.Println(g)
+
+	fmt.Println(g.toRegex())
+}
+
+func TestGNFAToRegex9(t *testing.T) {
+	var p parser
+
+	d := p.regexToDFA("a(a|b)*b").minimize()
+	fmt.Println(d)
+
+	g := d.toGNAF()
+	fmt.Println(g)
+
+	fmt.Println(g.toRegex())
+}

@@ -13,20 +13,22 @@ type dfa struct {
 	trans   *transDFA
 }
 
-// Introduction to the Theory of Computation Chapter 1.3.2
+// toRegex transforms a DFA to an equivalent regular expression
+// this implementation is from the book `Introduction to the Theory of Computation` Chapter 1.3.2
 func (d *dfa) toRegex() string {
-	// todo
-	return ""
+	return d.toGNAF().toRegex()
 }
 
+// There are two usual method to minimize a DFA.
+// One is called Brzozowski algorithm, the other is called Hopcroft algorithm.
 func (d *dfa) minimize() *dfa {
 	return d.minimizeHopcroft()
 	// return  d.minimizeBrzozowski()  Bug!!!
 }
 
 // isSubset return weather d is the subset of d2
+// `d1 is the subset of d2` is equal to (d1 - d2) is a empty set
 func (d *dfa) isSubsetOf(d2 *dfa) bool {
-	// `d1 is the subset of d2` is equal to (d1 - d2) is a empty set
 	return d.difference(d2).isEmpty()
 }
 
