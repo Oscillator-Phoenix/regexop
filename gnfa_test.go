@@ -153,7 +153,7 @@ func TestGNFAToRegex10(t *testing.T) {
 	g := d.toGNAF()
 	fmt.Println(g)
 
-	fmt.Println(g.toRegex())
+	fmt.Println(prettyRegex(g.toRegex()))
 }
 
 func TestGNFAToRegex11(t *testing.T) {

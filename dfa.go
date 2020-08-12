@@ -22,7 +22,8 @@ func (d *dfa) toRegex() string {
 
 // prettyRegex aims at reducing outermost pair of brackets
 func prettyRegex(re string) string {
-	// todo
+	// TODO
+	// this is difficult...
 	return re
 }
 
